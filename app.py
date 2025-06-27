@@ -1,4 +1,3 @@
-
 import streamlit as st
 from PIL import Image
 import numpy as np
@@ -13,16 +12,14 @@ from streamlit_folium import st_folium
 from geopy.geocoders import Nominatim
 from geopy.exc import GeocoderTimedOut
 import random
-import os
-from dotenv import load_dotenv
 
-# Load environment variables
-load_dotenv()
-st.secrets["OPENROUTER_API_KEY"]
+# Load secrets
+OPENROUTER_API_KEY = st.secrets["OPENROUTER_API_KEY"]
+OPENWEATHER_API_KEY = st.secrets["OPENWEATHER_API_KEY"]
 
-# Check if API key is loaded
-if not OPENROUTER_API_KEY:
-    st.error("OpenRouter API key not found. Please check your .env file or Streamlit secrets.")
+# Check if API keys are loaded
+if not OPENROUTER_API_KEY or not OPENWEATHER_API_KEY:
+    st.error("API keys not found. Please configure secrets.toml with OPENROUTER_API_KEY and OPENWEATHER_API_KEY.")
     st.stop()
 
 # App title and description
@@ -108,14 +105,11 @@ st.sidebar.success(f"📍 Selected Location: {selected_city}, {country}")
 # Combine into location string for weather API
 location = f"{selected_city}, {country}"
 
-# Weather API Configuration
-OPENWEATHER_API_KEY = "77e0c3ce19e37b2f9c0a39cea77a7d19"
-
 # Load your trained model (silently)
 @st.cache_resource
 def load_model():
     try:
-        interpreter = tf.lite.Interpreter(model_path='plant_disease_classifier_quant.tflite')
+        interpreter = tf.lite.Interpreter(model_path="models/plant_disease_classifier_quant.tflite")
         interpreter.allocate_tensors()
         return interpreter
     except Exception as e:
@@ -399,14 +393,13 @@ def preprocess_image(image):
 
 def get_openrouter_response(question, max_retries=3):
     """Fetch response from OpenRouter API with enhanced error handling"""
-    import time
     for attempt in range(max_retries):
         try:
             headers = {
-                "Authorization": f"Bearer {os.getenv('OPENROUTER_API_KEY')}",
+                "Authorization": f"Bearer {OPENROUTER_API_KEY}",
                 "Content-Type": "application/json",
-                "HTTP-Referer": "http://your-site-url.com",  # Replace or remove
-                "X-Title": "PestScanner App",  # Replace or remove
+                "HTTP-Referer": "https://pestscanner.streamlit.app",  # Replace with your deployed URL
+                "X-Title": "PestScanner App",
             }
             data = {
                 "model": "deepseek/deepseek-r1:free",
@@ -418,26 +411,21 @@ def get_openrouter_response(question, max_retries=3):
                 "temperature": 0.7,
                 "usage": {"include": True}
             }
-            print(f"Attempt {attempt + 1}: Sending request to OpenRouter...")
             response = requests.post(
                 url="https://openrouter.ai/api/v1/chat/completions",
                 headers=headers,
                 json=data,
                 timeout=30
             )
-            print(f"Response status code: {response.status_code}")
             response.raise_for_status()
             result = response.json()
-            print(f"Response received: {result}")
             content = result["choices"][0]["message"]["content"]
             if not content and "reasoning" in result["choices"][0]["message"]:
                 content = "Response truncated. Increase max_tokens or try again. Reasoning: " + result["choices"][0]["message"]["reasoning"]
-            # Limit response to 2000 characters to prevent overflow
             if len(content) > 2000:
                 content = content[:2000] + " [Response truncated due to character limit]"
             return content
         except requests.exceptions.HTTPError as e:
-            print(f"HTTP Error: {str(e)} - Response: {response.text if 'response' in locals() else 'No response'}")
             if response.status_code == 400 and "not a valid model ID" in str(e):
                 return f"Error: Invalid model ID 'deepseek/deepseek-r1:free'. Please check available models on OpenRouter."
             elif response.status_code == 429:
@@ -446,13 +434,11 @@ def get_openrouter_response(question, max_retries=3):
                     continue
             return f"Error: {str(e)} - Response: {response.text if 'response' in locals() else 'No response'}"
         except requests.exceptions.RequestException as e:
-            print(f"Request Exception: {str(e)}")
             if attempt < max_retries - 1:
                 time.sleep(2 ** attempt)
                 continue
             return f"Error: {str(e)} - Response: {getattr(e.response, 'text', 'No response')}"
         except Exception as e:
-            print(f"Unexpected Error: {str(e)}")
             if attempt < max_retries - 1:
                 time.sleep(2 ** attempt)
                 continue
