@@ -109,7 +109,7 @@ location = f"{selected_city}, {country}"
 @st.cache_resource
 def load_model():
     try:
-        interpreter = tf.lite.Interpreter(model_path="models/plant_disease_classifier_quant.tflite")
+        interpreter = tf.lite.Interpreter(model_path="plant_disease_classifier_quant.tflite")
         interpreter.allocate_tensors()
         return interpreter
     except Exception as e:
