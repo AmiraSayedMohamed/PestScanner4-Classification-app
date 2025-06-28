@@ -78,7 +78,7 @@ try:
             (x, y, x2, y2) = bbox
             class_id = int(cls)
             object_name = model.names[class_id]
-            if object_name.lower() == 'black-citron-aphid':
+            if object_name.lower() == 'black-citrus-aphid':
                 message_count += 1
                 # Save image with timestamp to ensure unique filenames
                 infected_plant_image_path = f"infected_{message_count}_{int(time.time())}.jpg"
