@@ -3,95 +3,104 @@ from ultralytics import YOLO
 import numpy as np
 import cv2
 import requests
+from queue import Queue
+import threading
 import time
+import os
 
 # Telegram bot parameters
 TOKEN = "7290187905:AAHp7vnjffhKLlAW23e0Z7IoEQ37tEPf_SE"
 CHAT_ID = '955629733'
-message_count = 0
-last_detection_time = 0
-detection_cooldown = 5
+message_count = 0  # Counter for the number of detected infected plants
 
+# Function to send message to Telegram
 def send_telegram_message(count, image_path=None):
-    try:
-        message = f"I found {count} infected plant{'s' if count > 1 else ''}."
-        url = f"https://api.telegram.org/bot{TOKEN}/sendMessage?chat_id={CHAT_ID}&text={message}"
-        r = requests.get(url, timeout=5)
+    message = f"I found {count} infected plant{'s' if count > 1 else ''}."
+    url = f"https://api.telegram.org/bot{TOKEN}/sendMessage?chat_id={CHAT_ID}&text={message}"
+    r = requests.get(url)
+    print(r.json())
+
+    if image_path:
+        files = {'photo': open(image_path, 'rb')}
+        url = f"https://api.telegram.org/bot{TOKEN}/sendPhoto?chat_id={CHAT_ID}"
+        r = requests.post(url, files=files)
         print(r.json())
 
+# Telegram worker function to handle messages in a separate thread
+def telegram_worker():
+    while True:
+        task = telegram_queue.get()
+        if task is None:
+            break
+        count, image_path = task
+        send_telegram_message(count, image_path)
         if image_path:
-            with open(image_path, 'rb') as photo:
-                files = {'photo': photo}
-                url = f"https://api.telegram.org/bot{TOKEN}/sendPhoto?chat_id={CHAT_ID}"
-                r = requests.post(url, files=files, timeout=5)
-                print(r.json())
-    except Exception as e:
-        print(f"Telegram error: {e}")
+            try:
+                os.remove(image_path)  # Clean up the image file after sending
+            except Exception as e:
+                print(f"Error deleting image: {e}")
 
-# Initialize Picamera2 with proper configuration
+# Initialize Picamera2 with lower resolution and BGR format for OpenCV
 picam2 = Picamera2()
-config = picam2.create_preview_configuration(
-    main={"size": (640, 480), "format": "RGB888"}  # Explicitly request RGB format
-)
-picam2.configure(config)
+picam2.configure(picam2.create_preview_configuration(main={"size": (320, 240), "format": "BGR888"}))
 picam2.start()
 
+# Load the YOLO model
 model = YOLO("best.pt")
-TARGET_FPS = 10
-frame_delay = 1.0 / TARGET_FPS
+
+# Create Telegram queue and start worker thread
+telegram_queue = Queue()
+telegram_thread = threading.Thread(target=telegram_worker, daemon=True)
+telegram_thread.start()
+
+# Create and position the OpenCV window once
+cv2.namedWindow("Camera", cv2.WINDOW_NORMAL)
+cv2.moveWindow("Camera", 100, 100)  # Fix window position
 
 try:
     while True:
-        start_time = time.time()
-        
+        # Capture a frame from the camera (in BGR format)
         frame = picam2.capture_array()
-        
-        # Ensure 3-channel input for YOLO (convert if necessary)
-        if frame.shape[2] == 4:  # If RGBA
-            frame = cv2.cvtColor(frame, cv2.COLOR_RGBA2RGB)
-        elif frame.shape[2] == 1:  # If grayscale
-            frame = cv2.cvtColor(frame, cv2.COLOR_GRAY2RGB)
-        
-        # Perform detection
-        results = model(frame, conf=0.3, show=False, verbose=False)
+
+        # Convert frame to RGB for YOLO
+        frame_rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+
+        # Perform detection using YOLO without its own window
+        results = model(frame_rgb, show=False, conf=0.3)
         result = results[0]
 
-        # Process results
+        # Get bounding boxes, confidence, and class names
         bboxes = np.array(result.boxes.xyxy.cpu(), dtype="int")
         confidences = np.array(result.boxes.conf.cpu(), dtype="float")
         classes = np.array(result.boxes.cls.cpu(), dtype="int")
-
-        current_time = time.time()
-        can_detect = (current_time - last_detection_time) > detection_cooldown
 
         for bbox, confi, cls in zip(bboxes, confidences, classes):
             (x, y, x2, y2) = bbox
             class_id = int(cls)
             object_name = model.names[class_id]
-            
-            cv2.rectangle(frame, (x, y), (x2, y2), (0, 0, 255), 2)
-            cv2.putText(frame, f"{object_name} {confi:.2f}", 
-                       (x, y - 5), cv2.FONT_HERSHEY_PLAIN, 1, (0, 0, 255), 2)
-
-            if object_name.lower() == 'black-citron-aphid' and can_detect:
-                last_detection_time = current_time
+            if object_name.lower() == 'black-citron-aphid':
                 message_count += 1
-                infected_plant_image_path = f"infected_{int(time.time())}.jpg"
+                # Save image with timestamp to ensure unique filenames
+                infected_plant_image_path = f"infected_{message_count}_{int(time.time())}.jpg"
                 cv2.imwrite(infected_plant_image_path, frame[y:y2, x:x2])
-                send_telegram_message(message_count, infected_plant_image_path)
+                # Send to Telegram via queue
+                telegram_queue.put((message_count, infected_plant_image_path))
 
-        cv2.putText(frame, f"Detected: {message_count}", (10, 30), 
-                   cv2.FONT_HERSHEY_PLAIN, 1.5, (0, 255, 0), 2)
-        cv2.imshow("Plant Disease Detection", frame)
+            # Draw bounding boxes and labels on the frame
+            cv2.rectangle(frame, (x, y), (x2, y2), (0, 0, 255), 2)
+            cv2.putText(frame, f"{object_name} {confi:.2f}", (x, y - 5), cv2.FONT_HERSHEY_PLAIN, 1, (0, 0, 255), 2)
 
-        processing_time = time.time() - start_time
-        wait_time = max(1, int((frame_delay - processing_time) * 1000))
-        
-        if cv2.waitKey(wait_time) & 0xFF == ord('q'):
+        # Show the processed frame in the fixed window
+        cv2.imshow("Camera", frame)
+
+        # Exit on 'q' key press, with a slight delay for stability
+        if cv2.waitKey(10) & 0xFF == ord('q'):
             break
 
-except Exception as e:
-    print(f"Error: {str(e)}")
+except KeyboardInterrupt:
+    print("Interrupt received. Closing...")
 finally:
+    # Clean up
     picam2.stop()
     cv2.destroyAllWindows()
+    telegram_queue.put(None)  # Signal the worker thread to stop
