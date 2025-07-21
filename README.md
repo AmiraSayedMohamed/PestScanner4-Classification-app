@@ -47,3 +47,6 @@ and here it's the link of the website:
 ```bash
 https://v0-pest-scanner-website-design-nnxxo79fx.vercel.app/
  ```
+to test the app you can upload this two pictures:
+- https://github.com/AmiraSayedMohamed/PestScanner4-Classification-app/blob/master/black-spot-disease-pic.jpg
+-----------
