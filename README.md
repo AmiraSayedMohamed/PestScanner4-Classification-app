@@ -1,10 +1,22 @@
 # 🌱 PestScanner Disease Classification App
-![App Screenshot](screenshot.png)
+![App Screenshot](https://github.com/AmiraSayedMohamed/PestScanner4-Classification-app/blob/master/1.jpg)
 <p align="center">
   <img src="https://github.com/AmiraSayedMohamed/PestScanner4-Classification-app/blob/master/1.jpg" width="200" style="margin: 10px;">
   <img src="https://github.com/AmiraSayedMohamed/PestScanner4-Classification-app/blob/master/2.jpg" width="200" style="margin: 10px;"><br>
   <img src="https://github.com/AmiraSayedMohamed/PestScanner4-Classification-app/blob/master/3.jpg" width="200" style="margin: 10px;">
   <img src="https://github.com/AmiraSayedMohamed/PestScanner4-Classification-app/blob/master/6.jpg" width="200" style="margin: 10px;">
+</p>
+
+<img src="https://github.com/AmiraSayedMohamed/PestScanner4-Classification-app/blob/master/4.jpg" width="200" style="margin: 10px;">
+</p>
+
+<img src="https://github.com/AmiraSayedMohamed/PestScanner4-Classification-app/blob/master/5.jpg" width="200" style="margin: 10px;">
+</p>
+
+<img src="https://github.com/AmiraSayedMohamed/PestScanner4-Classification-app/blob/master/7.jpg" width="200" style="margin: 10px;">
+</p>
+
+<img src="https://github.com/AmiraSayedMohamed/PestScanner4-Classification-app/blob/master/8.jpg" width="200" style="margin: 10px;">
 </p>
 
 A powerful AI-powered web application for classifying citrus leaf diseases, visualizing pest outbreak maps, and analyzing weather-related disease risks — tailored for Egyptian farmers and agricultural experts.
