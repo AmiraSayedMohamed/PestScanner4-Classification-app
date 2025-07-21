@@ -1,26 +1,43 @@
-# PestScanner4-Classification-app
+# 🌱 PestScanner Disease Classification App
 
+A powerful AI-powered web application for classifying citrus leaf diseases, visualizing pest outbreak maps, and analyzing weather-related disease risks — tailored for Egyptian farmers and agricultural experts.
 to deply like in cloud :
 ngrok http 5000
 
+---
 
-## Setup Instructions
+## 📌 Features
 
-### Raspberry Pi Setup
+- 🔍 **Image-Based Disease Detection** using TensorFlow Lite
+- 🧠 **Weather-Integrated Risk Forecasting** via OpenWeather API
+- 🗺️ **Interactive Pest Monitoring Map** using Folium
+- 🧪 **Localized Treatment Recommendations** (Chemical, Organic, and Cultural)
+- 🤖 **Agricultural AI Chatbot** via OpenRouter for expert advice
+- 🧭 **Geolocation-Aware City Selection** (covering 40+ Egyptian cities)
+- 📊 **Charts and Reports** for visualizing disease types and severity trends
 
-1. **Hardware Requirements**:
-   - Raspberry Pi (any model with UART)
-   - GPS module (NMEA-compatible)
+---
 
-2. **Software Dependencies**:
+## 🖼️ Example Use Case
+
+1. Upload a **citrus leaf image** (JPG/PNG)
+2. Get a **disease diagnosis** (Black Spot or Citrus Canker)
+3. View:
+   - Recommended treatments
+   - Disease probability distribution
+   - Weather-based spread forecast
+   - Interactive map of reported outbreaks in your area
+
+---
+
+## 🚀 Getting Started
+
+### 1. Clone the Repository
+
 ```bash
-   gps_tracking_project/
-├── raspberry_pi/
-│   ├── gps_to_firebase.py          # Python script to read GPS and send to Firebase
-│   └── your-project-id-firebase-adminsdk-xxxxx-xxxxxxxxxx.json  # Firebase service account key
-├── web_app/
-│   └── index.html                  # Web interface to display real-time tracking
-└── README.md                       # Project documentation (optional)
+git clone https://github.com/your-username/pestscanner.git
+cd pestscanner
+
  ```
 here it's the link of the app live you can test it: 
 ```bash
