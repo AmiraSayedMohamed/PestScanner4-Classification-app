@@ -32,6 +32,8 @@ ngrok http 5000
 - 🤖 **Agricultural AI Chatbot** via OpenRouter for expert advice
 - 🧭 **Geolocation-Aware City Selection** (covering 40+ Egyptian cities)
 - 📊 **Charts and Reports** for visualizing disease types and severity trends
+- **Recommendation System** on how to treat teh disease
+- **Technical Support to answer any question you want inside the part ask and expert**
 
 ---
 
@@ -68,3 +70,9 @@ to test the app you can upload this two pictures:
 - https://github.com/AmiraSayedMohamed/PestScanner4-Classification-app/blob/master/black-spot-disease-pic.jpg
 - https://github.com/AmiraSayedMohamed/PestScanner4-Classification-app/blob/master/CitrucCanker-Disease-pic.jpg
 -----------
+### Structe of the repo:
+- 1.jpg to 8.jpg is the pictures of the app
+- CitrucCanker-Disease-pic.jpg  and  black-spot-disease-pic.jpg   are  picture you can use to test the functionality of the app
+- RaspberryPi-local-detect-count- telegramm , is code that you can run on yourcomputer local to dectect the disease real time using custom data
+- plant_disease_classifier-quant.tf ---- i have make quantization to my classification model to reduce it's size
+
