@@ -1,4 +1,5 @@
 # 🌱 PestScanner Disease Classification App
+![App Screenshot](screenshot.png)
 
 A powerful AI-powered web application for classifying citrus leaf diseases, visualizing pest outbreak maps, and analyzing weather-related disease risks — tailored for Egyptian farmers and agricultural experts.
 to deply like in cloud :
@@ -49,4 +50,5 @@ https://v0-pest-scanner-website-design-nnxxo79fx.vercel.app/
  ```
 to test the app you can upload this two pictures:
 - https://github.com/AmiraSayedMohamed/PestScanner4-Classification-app/blob/master/black-spot-disease-pic.jpg
+- https://github.com/AmiraSayedMohamed/PestScanner4-Classification-app/blob/master/CitrucCanker-Disease-pic.jpg
 -----------
